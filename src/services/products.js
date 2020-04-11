@@ -1,4 +1,5 @@
 const uuidv1 = require('uuid/v1')
+const { Transform } = require('stream')
 
 const createProduct = async ({ name }, conn) => {
   if (!name) throw new Error('missing.fields')
@@ -34,6 +35,25 @@ const streamProducts = ({ search, pageSize, pageNo }, streamableConn) => {
     ORDER BY products.created DESC
     LIMIT ?,?
   `, [`%${search}%`, pageNo * pageSize, pageSize])
+    .stream()
+    .pipe(new Transform({
+      objectMode: true,
+      transform(chunk, encoding, cb) {
+        if (this.notFirst) {
+          this.push(',')
+        } else {
+          this.push('[')
+        }
+
+        this.push(JSON.stringify(chunk))
+        this.notFirst = true
+        cb()
+      },
+      flush(cb) {
+        this.push(']')
+        cb()
+      }
+    }))
 }
 
 module.exports = {

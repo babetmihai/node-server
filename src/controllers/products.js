@@ -2,6 +2,7 @@
 const productService = require('../services/products')
 const { Router } = require('express')
 const { pool, promisePool } =  require('../db')
+const { pipeline } = require('stream')
 
 const router = Router()
 router.post('/products', async (req, res, next) => {
@@ -28,29 +29,11 @@ router.get('/products', async (req, res, next) => {
       if (error) {
         next(error)
       } else {
-        let notFirst
-        let hasError
-        res.write('[')
-        productService.streamProducts({ search, pageSize, pageNo }, streamableConn)
-          .on('result', (row) => {
-            if (notFirst) {
-              res.write(',')
-            } else {
-              notFirst = true
-            }
-            res.write(JSON.stringify(row))
-          })
-          .on('end', () => {
-            streamableConn.release()
-            if (!hasError) {
-              res.write(']')
-              res.end()
-            }
-          })
-          .on('error', () => {
-            hasError = true
-            next(error)
-          })
+        pipeline(
+          productService.streamProducts({ search, pageSize, pageNo }, streamableConn),
+          res,
+          next
+        )
       }
     })
   } else {
