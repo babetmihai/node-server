@@ -36,24 +36,6 @@ const streamProducts = ({ search, pageSize, pageNo }, streamableConn) => {
     LIMIT ?,?
   `, [`%${search}%`, pageNo * pageSize, pageSize])
     .stream()
-    .pipe(new Transform({
-      objectMode: true,
-      transform(chunk, encoding, cb) {
-        if (this.notFirst) {
-          this.push(',')
-        } else {
-          this.push('[')
-        }
-
-        this.push(JSON.stringify(chunk))
-        this.notFirst = true
-        cb()
-      },
-      flush(cb) {
-        this.push(']')
-        cb()
-      }
-    }))
 }
 
 module.exports = {

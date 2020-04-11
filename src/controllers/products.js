@@ -2,7 +2,7 @@
 const productService = require('../services/products')
 const { Router } = require('express')
 const { pool, promisePool } =  require('../db')
-const { pipeline } = require('stream')
+const { Transform, pipeline } = require('stream')
 
 const router = Router()
 router.post('/products', async (req, res, next) => {
@@ -31,8 +31,29 @@ router.get('/products', async (req, res, next) => {
       } else {
         pipeline(
           productService.streamProducts({ search, pageSize, pageNo }, streamableConn),
+          new Transform({
+            objectMode: true,
+            transform(chunk, encoding, cb) {
+              if (this.notFirst) {
+                this.push(',')
+              } else {
+                this.push('[')
+              }
+
+              this.push(JSON.stringify(chunk))
+              this.notFirst = true
+              cb()
+            },
+            flush(cb) {
+              this.push(']')
+              cb()
+            }
+          }),
           res,
-          next
+          (error) => {
+            streamableConn.release()
+            if (error) next(error)
+          }
         )
       }
     })
