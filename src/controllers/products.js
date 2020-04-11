@@ -1,8 +1,9 @@
 
+const { pipeline } = require('stream')
 const productService = require('../services/products')
 const { Router } = require('express')
 const { pool, promisePool } =  require('../db')
-const { Transform, pipeline } = require('stream')
+const { transformJSON } = require('../utils')
 
 const router = Router()
 router.post('/products', async (req, res, next) => {
@@ -31,24 +32,7 @@ router.get('/products', async (req, res, next) => {
       } else {
         pipeline(
           productService.streamProducts({ search, pageSize, pageNo }, streamableConn),
-          new Transform({
-            objectMode: true,
-            transform(chunk, encoding, cb) {
-              if (this.notFirst) {
-                this.push(',')
-              } else {
-                this.push('[')
-                this.notFirst = true
-              }
-
-              this.push(JSON.stringify(chunk))
-              cb()
-            },
-            flush(cb) {
-              this.push(']')
-              cb()
-            }
-          }),
+          transformJSON(),
           res,
           (error) => {
             streamableConn.release()
