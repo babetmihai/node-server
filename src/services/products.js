@@ -1,5 +1,4 @@
 const uuidv1 = require('uuid/v1')
-const { Transform } = require('stream')
 
 const createProduct = async ({ name }, conn) => {
   if (!name) throw new Error('missing.fields')
