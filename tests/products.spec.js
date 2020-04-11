@@ -18,7 +18,7 @@ it('it should create and list products', async () => {
   const { data } = await axios.get(
     `http://localhost:${PORT}/products`,
     {
-      params: { search: 'est', pageNo: 1, pageSize: 1 },
+      params: { search: 'est', pageNo: 0, pageSize: 100 },
       headers: {
         'Authorization': `Bearer ${TOKEN}`,
         'Content-Type': 'application/json'
@@ -27,6 +27,6 @@ it('it should create and list products', async () => {
   )
 
   const hasItem = Object.values(data).some((item) => item.name === 'test2')
-  assert.equal(data.length, 1)
+  assert.equal(data.length, 2)
   assert.equal(hasItem, true)
 })
