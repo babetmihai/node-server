@@ -38,10 +38,10 @@ router.get('/products', async (req, res, next) => {
                 this.push(',')
               } else {
                 this.push('[')
+                this.notFirst = true
               }
 
               this.push(JSON.stringify(chunk))
-              this.notFirst = true
               cb()
             },
             flush(cb) {
