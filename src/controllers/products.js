@@ -3,7 +3,7 @@ const { pipeline } = require('stream')
 const productService = require('../services/products')
 const { Router } = require('express')
 const { pool, promisePool } =  require('../db')
-const { transformJSON } = require('../utils')
+const { objstream } = require('../utils')
 
 const router = Router()
 router.post('/products', async (req, res, next) => {
@@ -26,16 +26,16 @@ router.get('/products', async (req, res, next) => {
   pageNo = Number(pageNo)
 
   if (pageSize > 50) {
-    pool.getConnection((error, streamableConn) => {
+    pool.getConnection((error, conn) => {
       if (error) {
         next(error)
       } else {
         pipeline(
-          productService.streamProducts({ search, pageSize, pageNo }, streamableConn),
-          transformJSON(),
+          productService.streamProducts({ search, pageSize, pageNo }, conn),
+          objstream(),
           res,
           (error) => {
-            streamableConn.release()
+            conn.release()
             if (error) next(error)
           }
         )

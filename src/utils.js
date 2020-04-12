@@ -1,24 +1,25 @@
 const { Transform } = require('stream')
 
-const transformJSON = () => new Transform({
+const objstream = () => new Transform({
   objectMode: true,
-  transform(chunk, encoding, cb) {
-    if (this.notFirst) {
-      this.push(',')
-    } else {
+  transform(chunk, encoding, next) {
+    if (!this.started) {
       this.push('[')
-      this.notFirst = true
+      this.started = true
+    } else {
+      this.push(',')
     }
 
     this.push(JSON.stringify(chunk))
-    cb()
+    next()
   },
-  flush(cb) {
+  flush(next) {
+    if (!this.started) this.push('[')
     this.push(']')
-    cb()
+    next()
   }
 })
 
 module.exports = {
-  transformJSON
+  objstream
 }
