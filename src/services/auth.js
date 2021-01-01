@@ -10,9 +10,9 @@ const verifyToken = async ({ token }) => {
   return { userId }
 }
 
-const createToken = async ({ email, password }, conn) => {
+const createToken = async ({ email, password, conn }) => {
   if (!email || !password) throw new Error('missing.email.or.passowrd')
-  const user = await userService.getUserByEmail({ email }, conn)
+  const user = await userService.getUserByEmail({ email, conn })
   const authenticated = await bcrypt.compare(password, user.hash)
   if (!authenticated) throw new Error('invalid.credentials')
   return jwt.sign({ userId: user.id, email: user.email }, PRIVATE_KEY)

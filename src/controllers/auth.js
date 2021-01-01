@@ -9,7 +9,7 @@ router.post('/login', async (req, res, next) => {
   try {
     const { email, password } = req.body
     conn = await promisePool.getConnection()
-    const token = await authService.createToken({ email, password }, conn)
+    const token = await authService.createToken({ email, password, conn })
     res.status(200).json({ token })
   } catch (error) {
     error.status = 401

@@ -1,6 +1,6 @@
 const uuidv1 = require('uuid/v1')
 
-const createProduct = async ({ name }, conn) => {
+const createProduct = async ({ name, conn }) => {
   if (!name) throw new Error('missing.fields')
   const id = uuidv1()
   const product = { id, name }
@@ -8,7 +8,7 @@ const createProduct = async ({ name }, conn) => {
   return product
 }
 
-const getProduct = async ({ id }, conn) => {
+const getProduct = async ({ id, conn }) => {
   const [[product]] = await conn.query(`
     SELECT * FROM products 
     WHERE products.id = ?
@@ -17,7 +17,7 @@ const getProduct = async ({ id }, conn) => {
   return product
 }
 
-const getProducts = async ({ search, pageSize, pageNo  }, conn) => {
+const getProducts = async ({ search, pageSize, pageNo, conn }) => {
   const [products] = await conn.query(`
     SELECT * FROM products 
     WHERE products.name LIKE ?
@@ -27,7 +27,7 @@ const getProducts = async ({ search, pageSize, pageNo  }, conn) => {
   return products
 }
 
-const streamProducts = ({ search, pageSize, pageNo }, streamableConn) => {
+const streamProducts = ({ search, pageSize, pageNo, streamableConn }) => {
   return streamableConn.query(`
     SELECT * FROM products 
     WHERE products.name LIKE ?

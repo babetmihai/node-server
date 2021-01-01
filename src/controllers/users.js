@@ -8,7 +8,7 @@ router.post('/users', async (req, res, next) => {
   try {
     const { email, password } = req.body
     conn = await promisePool.getConnection()
-    const user = await userService.createUser({ email, password }, conn)
+    const user = await userService.createUser({ email, password, conn })
     res.status(200).json(user)
   } catch (error) {
     next(error)

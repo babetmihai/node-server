@@ -11,7 +11,7 @@ router.post('/products', async (req, res, next) => {
   try {
     const { name } = req.body
     conn = await promisePool.getConnection()
-    const product = await productService.createProduct({ name }, conn)
+    const product = await productService.createProduct({ name, conn })
     res.status(200).json(product)
   } catch (error) {
     next(error)
@@ -26,16 +26,16 @@ router.get('/products', async (req, res, next) => {
   pageNo = Number(pageNo)
 
   if (pageSize > 50) {
-    pool.getConnection((error, conn) => {
+    pool.getConnection((error, streamableConn) => {
       if (error) {
         next(error)
       } else {
         pipeline(
-          productService.streamProducts({ search, pageSize, pageNo }, conn),
+          productService.streamProducts({ search, pageSize, pageNo, streamableConn }),
           objstream(),
           res,
           (error) => {
-            conn.release()
+            streamableConn.release()
             if (error) next(error)
           }
         )
@@ -45,7 +45,7 @@ router.get('/products', async (req, res, next) => {
     let conn
     try {
       conn = await promisePool.getConnection()
-      const products = await productService.getProducts({ search, pageSize, pageNo }, conn)
+      const products = await productService.getProducts({ search, pageSize, pageNo, conn })
       res.status(200).json(products)
     } catch (error) {
       next(error)
@@ -60,7 +60,7 @@ router.get('/products/:id', async (req, res, next) => {
   try {
     const { id } = req.params
     conn = await promisePool.getConnection()
-    const product = await productService.getProduct({ id }, conn)
+    const product = await productService.getProduct({ id, conn })
     res.status(200).json(product)
   } catch (error) {
     next(error)
